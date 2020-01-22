@@ -20,6 +20,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
+            "gen_py=pltrdy.gen_script:main"
         ],
     }
 )
