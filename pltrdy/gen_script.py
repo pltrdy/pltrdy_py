@@ -5,14 +5,18 @@ import json
 
 def gen_script(data):
     if isinstance(data, str):
-        data = json.loads(data)
+        try:
+            data = json.loads(data)
+        except:
+            print("data: '%s'" % str(data))
+            raise
     tab="    "
     python_bin = "/usr/bin/env python"
     fct_name = data["name"]
     imports = data.get("import", [])
     args = data.get("args", [])
     kwargs = data.get("kwargs", {})
-    all_args = args + ["%s=%s" % (k, v) for k, v in kwargs.items()]
+    all_args = args + ['%s="%s"' % (k, v) for k, v in kwargs.items()]
     all_args_str = ", ".join(all_args)
     
     def tprint(tlvl, *args, **kwargs):
