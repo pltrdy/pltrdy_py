@@ -15,12 +15,13 @@ def percentiles(data, n):
         cur += prct
 
     p = list(np.percentile(data, q))
-    assert len(p) == (n-1)
+    assert len(p) == (n - 1)
     return p
+
 
 def deciles(data):
     return percentiles(data, n=10)
 
+
 def quartiles(data):
     return percentiles(data, n=4)
-

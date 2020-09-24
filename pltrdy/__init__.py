@@ -5,4 +5,4 @@ import pltrdy.pickle
 import pltrdy.rouge
 import pltrdy.stats
 import pltrdy.time
-import pltrdy.wc
+import pltrdy.wc # noqa F401

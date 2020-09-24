@@ -15,8 +15,8 @@ def read_rouge(rouge_path):
 
     if not len(rouge_lines) == 13:
         raise ValueError("Incorrect ROUGE file (%d != 13 lines) %s" %
-              (len(rouge_lines), rouge_path))
-    
+                         (len(rouge_lines), rouge_path))
+
     rouge_format = {
         "rouge-1": {
             "r": 2,
@@ -34,12 +34,13 @@ def read_rouge(rouge_path):
             "f": 12
         }
     }
+
     def _rouge_value(m, s):
         n = rouge_format[m][s]
-        line = rouge_lines[n-1]
+        line = rouge_lines[n - 1]
         try:
             end = line.split('Average_%s: ' % s.upper())[1]
-        except:
+        except BaseException:
             print(line, s, n, line.split('Average_%s: ' % s.upper()))
             raise
         score = end.split()[0]

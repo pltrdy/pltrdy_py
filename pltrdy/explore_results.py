@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 import os
-import subprocess
 
 from pltrdy.rouge import read_rouge
 from pltrdy.wc import wordcount
 
+
 def srcrougefct(x):
     if x["src_rouge"] == "none":
-        return 0.0 
+        return 0.0
     else:
         return -float(x["src_rouge"].split(";")[0])
+
 
 def perplexity(rouge_path, incl_oov=True):
     n_line = 0 if incl_oov else 1
@@ -26,8 +27,9 @@ def perplexity(rouge_path, incl_oov=True):
 def clean_suffix(suffix):
     to_remove = ["bpe", "decoded", "rouge"]
     for r in to_remove:
-        suffix = suffix.replace(r, "") 
+        suffix = suffix.replace(r, "")
     return suffix
+
 
 class ResultsExplorer(object):
     DEFAULT_FIELDS = [
@@ -38,14 +40,16 @@ class ResultsExplorer(object):
     FILTERS = {
         "valid": lambda p: ".valid" in p,
         "predtok": lambda p: "predtok" in p,
-        "onlytoks": lambda p: "onlytoks" in p, 
+        "onlytoks": lambda p: "onlytoks" in p,
     }
 
     SORT_FCT = {
         "copy_desc": srcrougefct,
         "ppl": lambda x: -x["ppl"]
     }
-    def __init__(self, name, exps=[], exps_with_regex={}, custom_filters={}, extra_fields={}):
+
+    def __init__(self, name, exps=[], exps_with_regex={},
+                 custom_filters={}, extra_fields={}):
         """
             name:
             exps: list of directories where *.rouge files are
@@ -55,17 +59,17 @@ class ResultsExplorer(object):
                           path and should return the field value
 
         """
-        self.name = name 
+        self.name = name
 
         self.exps_with_regex = exps_with_regex
         self.exps_with_regex.update({
-            e: "model(.*)\.rouge"
+            e: r"model(.*)\.rouge"
             for e in exps
         })
         self.extra_fields = extra_fields
         self.filters = dict(ResultsExplorer.FILTERS)
         self.filters.update(custom_filters)
-    
+
     def all_filters(self, path, filters_switch):
         for k, v in filters_switch.items():
             _v = self.filters[k](path)
@@ -110,21 +114,23 @@ class ResultsExplorer(object):
                     raise
 
                 try:
-                    n_step = float(step)
-                except:
+                    float(step)
+                except BaseException:
                     continue
                 src_rouge_path = rouge_path.replace('.rouge', '.src_rouge')
                 if os.path.exists(src_rouge_path):
                     try:
                         r = read_rouge(src_rouge_path)
-                        src_rouge = " ; ".join(["%2.2f" % (100*float(r["rouge-1"][k]))
-                                       for k in ["r", "p", "f"]])
-                    except:
+                        src_rouge = " ; ".join([
+                            "%2.2f" % (100 * float(r["rouge-1"][k]))
+                            for k in ["r", "p", "f"]
+                        ])
+                    except BaseException:
                         src_rouge = "err"
                 else:
                     src_rouge = "none"
                 r = {}
-                dec_suffix = rouge_path.split(str(step)+"k")[1]\
+                dec_suffix = rouge_path.split(str(step) + "k")[1]\
                     .split(".txt")[0]\
                     .replace('.', '')\
                     .replace('true_test', '')
@@ -133,9 +139,12 @@ class ResultsExplorer(object):
                 r['exp'] = exp_root
                 r['model'] = model
                 r['step'] = step
-                r['rouge_1'] = float(lines[3].split('Average_F: ')[1].split()[0])
-                r['rouge_2'] = float(lines[7].split('Average_F: ')[1].split()[0])
-                r['rouge_l'] = float(lines[11].split('Average_F: ')[1].split()[0])
+                r['rouge_1'] = float(lines[3].split(
+                    'Average_F: ')[1].split()[0])
+                r['rouge_2'] = float(lines[7].split(
+                    'Average_F: ')[1].split()[0])
+                r['rouge_l'] = float(lines[11].split(
+                    'Average_F: ')[1].split()[0])
                 r['src_rouge'] = src_rouge
                 try:
                     wc = int(wordcount(rouge_path.replace('.rouge', '')))
@@ -148,29 +157,28 @@ class ResultsExplorer(object):
                     r[k] = f(rouge_path)
                 print(r)
                 results.append(r)
-        
 
         if sort_field is None:
             results = sorted(results,
                              key=lambda x: (
-                                x['rouge_1'],
-                                x['exp'],
-                                x['model'],
-                                x['step']
+                                 x['rouge_1'],
+                                 x['exp'],
+                                 x['model'],
+                                 x['step']
                              ),
                              reverse=True)
         else:
             if sort_field in ResultsExplorer.SORT_FCT:
                 sort_fct = ResultsExplorer.SORT_FCT[sort_field]
             else:
-                sort_fct = lambda x: x[sort_field]
+                def sort_fct(x): return x[sort_field]
             results = sorted(results,
                              key=lambda x: (
-                                sort_fct(x),
-                                x['rouge_1'],
-                                x['exp'],
-                                x['model'],
-                                int(x['step'].replace('k', ''))
+                                 sort_fct(x),
+                                 x['rouge_1'],
+                                 x['exp'],
+                                 x['model'],
+                                 int(x['step'].replace('k', ''))
                              ),
                              reverse=True)
 
@@ -185,7 +193,8 @@ class ResultsExplorer(object):
                 if r[k] == top[k]:
                     r[k] = "**%f**" % r[k]
 
-            _r = "| " + "| ".join([str(r[k]).replace('_', '_') for k in fields])
+            _r = "| " + "| ".join([str(r[k]).replace('_', '_')
+                                   for k in fields])
             _r += " |"
             m += [_r]
 
@@ -193,9 +202,10 @@ class ResultsExplorer(object):
         for k, v in filters.items():
             if v:
                 filters_suffix += ".%s" % k
-        
+
         sort_suffix = "" if sort_field is None else ".%s" % sort_field
-        out_path = "results.%s%s%s.md" % (self.name, filters_suffix, sort_suffix)
+        out_path = "results.%s%s%s.md" % (
+            self.name, filters_suffix, sort_suffix)
         with open(out_path, 'w') as f:
             print("Output in '%s'" % out_path)
             print("\n".join(m), file=f)
@@ -207,7 +217,7 @@ class ResultsExplorer(object):
         parser.add_argument("-sort_field", type=str)
         for f in filters:
             parser.add_argument("-%s" % f, action="store_true")
-        
+
         args = parser.parse_args()
         filters_args = {
             f: getattr(args, f)
