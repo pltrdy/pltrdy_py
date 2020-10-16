@@ -1,3 +1,4 @@
+import numpy as np
 
 
 def aeq(*args):
@@ -12,9 +13,21 @@ def assert_shapes(*shapes):
        we assert that for all shape i and dimension j
        shapes[0][j] == shapes[i][j]
     """
-    for d, sizes in enumerate(zip(*shapes)):
+    def fix_shape(shape):
+        if isinstance(shape, np.ndarray):
+            shape = shape.shape
+        return shape
+    shapes = [fix_shape(s) for s in shapes]
+
+    for i, sizes in enumerate(zip(*shapes)):
         try:
             aeq(*sizes)
         except AssertionError as e:
-            raise AssertionError("On dimension %d size mismatch: %s"
-                                 % (d, str(e))) from e
+            shapes_str = ", ".join([
+                "[%s]" % (", ".join([
+                    str(d) if j != i else "*%d*" % d
+                    for j, d in enumerate(s)
+                ])) for s in shapes
+            ])
+            raise AssertionError("Size mismatch on dimension %d: %s"
+                                 % (i, shapes_str)) from e
