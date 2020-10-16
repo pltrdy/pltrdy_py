@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import numpy as np
 
 from pltrdy.rouge import read_rouge
 from pltrdy.wc import wordcount
@@ -22,6 +23,26 @@ def perplexity(rouge_path, incl_oov=True):
     ppl = line.split("OOVs:")[-1]
     ppl = float(ppl)
     return ppl
+
+def dual_xent(rouge_path, agg=np.mean, n=None):
+    dual_xent_path = rouge_path.replace(".rouge", ".dual_xent.src-pred")
+
+    xents = []
+    with open(dual_xent_path) as f:
+        for line in f:
+            line = line.strip()
+            xent = float(line)
+            xents.append(xent)
+    if n is not None:
+        assert len(xents) == n
+
+    return agg(xents)
+
+
+def src_rouge(rouge_path):
+    src_rouge_path = rouge_path.replace('.rouge', '.src_rouge')
+    r = read_rouge(src_rouge_path)
+    return src_rouge
 
 
 def clean_suffix(suffix):
