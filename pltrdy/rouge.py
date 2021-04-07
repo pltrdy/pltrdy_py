@@ -21,23 +21,23 @@ def read_rouge(rouge_path):
             continue
         elif line.startswith("1 "):
             line = line[2:]
-            
+
             metric, stat_and_score = line.split("Average")
-            
+
             assert metric.startswith("ROUGE-")
             metric = metric.lower().strip()
 
             stat, score = stat_and_score.split(":")
             assert stat.startswith("_")
             stat = stat.replace("_", "").lower()
-            
+
             score_value, confidence = score.split("(")
             score_value = float(score_value)
-            
+
             conf_prct, conf_int = confidence.split("-conf.int. ")
             assert conf_prct.endswith("%")
             conf_prct = float(conf_prct.replace("%", "")) / 100
-            
+
             assert conf_int.endswith(")")
             conf_lower, conf_upper = conf_int.replace(")", "").split(" - ")
 
@@ -47,11 +47,11 @@ def read_rouge(rouge_path):
                 raise ValueError("Mutliple value for %s %s at line %d"
                                  % (metric, stat, i))
             rouge[metric][stat] = score_value
-            
+
         elif len(line) == 0:
             # print("Ignore empty line")
             continue
         else:
             raise ValueError("Unkown line (%d): %s" % (i, line))
 
-    return rouge 
+    return rouge

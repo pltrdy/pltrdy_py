@@ -11,6 +11,7 @@ def aeq(*args, msg=None):
         "%sArguments are not all equal %s" % (msg, str(args))
     )
 
+
 def aaeq(*args):
     assert len(args) > 1, "aaeq a single element is meaningless, use aeq"
 
@@ -19,6 +20,7 @@ def aaeq(*args):
             "Arguments are not all equal for element %d, %s"
             % (i, str(args_i))
         )
+
 
 def assert_shapes(*shapes):
     """shapes are iterable of same length

@@ -25,6 +25,7 @@ def perplexity(rouge_path, incl_oov=True):
     ppl = float(ppl)
     return ppl
 
+
 def dual_xent(rouge_path, agg=np.mean, n=None):
     dual_xent_path = rouge_path.replace(".rouge", ".dual_xent.src-pred")
 
@@ -45,12 +46,14 @@ def src_rouge(rouge_path):
     r = read_rouge(src_rouge_path)
     return r
 
+
 def read_rouge_memory(rouge_path, memory={}, key="rouge"):
     if key in memory.keys():
         return memory[key]
     score = read_rouge(rouge_path)
     memory[key] = score
     return score
+
 
 def step_field_fct(self, rouge_path, memory):
     name = os.path.basename(rouge_path)
@@ -61,19 +64,23 @@ def step_field_fct(self, rouge_path, memory):
         raise IndexError("Cannot read step of '%s'" % rouge_path)
     return step
 
+
 def dec_suffix_field_fct(self, rouge_path, memory):
     step = memory.get("step")
     if step is None:
-        raise ValueError("dec_suffix suppose 'step' field (absent from memory)")
+        raise ValueError(
+            "dec_suffix suppose 'step' field (absent from memory)")
     dec_suffix = rouge_path.split(str(step) + "k")[1]\
         .split(".txt")[0]\
         .replace('.', '')\
         .replace('true_test', '')
     return clean_suffix(dec_suffix)
 
+
 def wc_field_fct(self, rouge_path, memory):
     wc = int(wordcount(rouge_path.replace('.rouge', '')))
     return wc
+
 
 def src_rouge_field_fct(self, rouge_path, memory):
     r = src_rouge(rouge_path)
@@ -85,6 +92,7 @@ def src_rouge_field_fct(self, rouge_path, memory):
 
 def model_name_by_pred(result_name):
     return result_name.split("_pred.")[0]
+
 
 def clean_suffix(suffix):
     to_remove = ["bpe", "decoded", "rouge"]
@@ -101,7 +109,7 @@ class ResultsExplorer(object):
     DEFAULT_FIELDS = {
         'exp': lambda s, p, m: os.path.dirname(p),
         'model': lambda s, p, m: s.model_from_result_name(os.path.basename(p)),
-        'step': lambda s, p, m: step_field_fct(s, p, m), 
+        'step': lambda s, p, m: step_field_fct(s, p, m),
         'dec_suffix': lambda s, p, m: dec_suffix_field_fct(s, p, m),
         'wc': lambda s, p, m: wc_field_fct(s, p, m),
         'rouge_1': lambda s, p, m: read_rouge_memory(p, m)["rouge-1"]["f"],
@@ -120,7 +128,7 @@ class ResultsExplorer(object):
         "copy_desc": srcrougefct,
         "ppl": lambda x: -x["ppl"]
     }
-    
+
     DEFAULT_REGEX = r"model(.*)\.rouge"
 
     def __init__(self, name, exps=[], default_regex=DEFAULT_REGEX, exps_with_regex={},
@@ -143,7 +151,7 @@ class ResultsExplorer(object):
             e: default_regex
             for e in exps
         })
-        
+
         self.fields = {}
         for k in fields:
             if k in exclude_fields:
@@ -154,7 +162,7 @@ class ResultsExplorer(object):
                 raise ValueError("Unknow field %s, choices are: %s"
                                  % (k, list(ResultsExplorer.DEFAULT_FIELDS[k])))
         self.fields.update(extra_fields)
-        
+
         self.filters = dict(ResultsExplorer.FILTERS)
         self.filters.update(custom_filters)
 
@@ -188,7 +196,7 @@ class ResultsExplorer(object):
             ])
             for result_name in exp_results:
                 rouge_path = os.path.join(exp_root, result_name)
-                
+
                 r = {}
                 for key, fct in fields.items():
                     r[key] = fct(self, rouge_path, r)
