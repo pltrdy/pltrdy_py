@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import re
 import numpy as np
 
 from pltrdy.rouge import read_rouge
@@ -42,8 +43,48 @@ def dual_xent(rouge_path, agg=np.mean, n=None):
 def src_rouge(rouge_path):
     src_rouge_path = rouge_path.replace('.rouge', '.src_rouge')
     r = read_rouge(src_rouge_path)
-    return src_rouge
+    return r
 
+def read_rouge_memory(rouge_path, memory={}, key="rouge"):
+    if key in memory.keys():
+        return memory[key]
+    score = read_rouge(rouge_path)
+    memory[key] = score
+    return score
+
+def step_field_fct(self, rouge_path, memory):
+    name = os.path.basename(rouge_path)
+
+    try:
+        step = name.split("_pred.")[1].split("k")[0]
+    except IndexError:
+        raise IndexError("Cannot read step of '%s'" % rouge_path)
+    return step
+
+def dec_suffix_field_fct(self, rouge_path, memory):
+    step = memory.get("step")
+    if step is None:
+        raise ValueError("dec_suffix suppose 'step' field (absent from memory)")
+    dec_suffix = rouge_path.split(str(step) + "k")[1]\
+        .split(".txt")[0]\
+        .replace('.', '')\
+        .replace('true_test', '')
+    return clean_suffix(dec_suffix)
+
+def wc_field_fct(self, rouge_path, memory):
+    wc = int(wordcount(rouge_path.replace('.rouge', '')))
+    return wc
+
+def src_rouge_field_fct(self, rouge_path, memory):
+    r = src_rouge(rouge_path)
+    return " ; ".join([
+        "%2.2f" % (100 * float(r["rouge-1"][k]))
+        for k in ["r", "p", "f"]
+    ])
+
+
+def model_name_by_pred(result_name):
+    return result_name.split("_pred.")[0]
 
 def clean_suffix(suffix):
     to_remove = ["bpe", "decoded", "rouge"]
@@ -53,14 +94,25 @@ def clean_suffix(suffix):
 
 
 class ResultsExplorer(object):
-    DEFAULT_FIELDS = [
-        'exp', 'model', 'step', 'dec_suffix',
-        'wc', 'rouge_1', 'rouge_2', 'rouge_l', 'src_rouge'
-    ]
+    MODEL_NOTOK_REG = r'model_(.*)notok(.*)_pred(.*)'
+
+    # Fields function
+    # i.e. calculate field value from self, rouge_path, memory
+    DEFAULT_FIELDS = {
+        'exp': lambda s, p, m: os.path.dirname(p),
+        'model': lambda s, p, m: s.model_from_result_name(os.path.basename(p)),
+        'step': lambda s, p, m: step_field_fct(s, p, m), 
+        'dec_suffix': lambda s, p, m: dec_suffix_field_fct(s, p, m),
+        'wc': lambda s, p, m: wc_field_fct(s, p, m),
+        'rouge_1': lambda s, p, m: read_rouge_memory(p, m)["rouge-1"]["f"],
+        'rouge_2': lambda s, p, m: read_rouge_memory(p, m)["rouge-2"]["f"],
+        'rouge_l': lambda s, p, m: read_rouge_memory(p, m)["rouge-l"]["f"],
+        'src_rouge': lambda s, p, m: src_rouge_field_fct(s, p, m)
+    }
 
     FILTERS = {
         "valid": lambda p: ".valid" in p,
-        "predtok": lambda p: "predtok" in p,
+        "predtok": lambda p: ("predtok" in p or re.match(ResultsExplorer.MODEL_NOTOK_REG, p) is not None),
         "onlytoks": lambda p: "onlytoks" in p,
     }
 
@@ -68,9 +120,13 @@ class ResultsExplorer(object):
         "copy_desc": srcrougefct,
         "ppl": lambda x: -x["ppl"]
     }
+    
+    DEFAULT_REGEX = r"model(.*)\.rouge"
 
-    def __init__(self, name, exps=[], exps_with_regex={},
-                 custom_filters={}, extra_fields={}):
+    def __init__(self, name, exps=[], default_regex=DEFAULT_REGEX, exps_with_regex={},
+                 custom_filters={}, extra_fields={},
+                 exclude_fields=[], fields=DEFAULT_FIELDS.keys(),
+                 model_name_fct=model_name_by_pred):
         """
             name:
             exps: list of directories where *.rouge files are
@@ -84,12 +140,28 @@ class ResultsExplorer(object):
 
         self.exps_with_regex = exps_with_regex
         self.exps_with_regex.update({
-            e: r"model(.*)\.rouge"
+            e: default_regex
             for e in exps
         })
-        self.extra_fields = extra_fields
+        
+        self.fields = {}
+        for k in fields:
+            if k in exclude_fields:
+                continue
+            if k in ResultsExplorer.DEFAULT_FIELDS.keys():
+                self.fields[k] = ResultsExplorer.DEFAULT_FIELDS[k]
+            else:
+                raise ValueError("Unknow field %s, choices are: %s"
+                                 % (k, list(ResultsExplorer.DEFAULT_FIELDS[k])))
+        self.fields.update(extra_fields)
+        
         self.filters = dict(ResultsExplorer.FILTERS)
         self.filters.update(custom_filters)
+
+        self.model_name_fct = model_name_fct
+
+    def model_from_result_name(self, result_name):
+        return self.model_name_fct(result_name)
 
     def all_filters(self, path, filters_switch):
         for k, v in filters_switch.items():
@@ -104,10 +176,8 @@ class ResultsExplorer(object):
         ])
 
     def explore_results(self, sort_field=None, **filters):
-        import re
+        fields = self.fields
         results = []
-        fields = ResultsExplorer.DEFAULT_FIELDS
-        fields.extend(self.extra_fields.keys())
 
         for exp_root, reg in self.exps_with_regex.items():
             print(exp_root)
@@ -118,65 +188,11 @@ class ResultsExplorer(object):
             ])
             for result_name in exp_results:
                 rouge_path = os.path.join(exp_root, result_name)
-
-                with open(rouge_path, 'r') as f:
-                    lines = [_.strip() for _ in f]
-
-                if not len(lines) == 13:
-                    print("Incorrect result files (%d != 13 lines) %s" %
-                          (len(lines), rouge_path))
-                    continue
-
-                model = result_name.split("_pred.")[0]
-                try:
-                    step = result_name.split("_pred.")[1].split("k")[0]
-                except IndexError:
-                    print("Cannot read step of '%s'" % rouge_path)
-                    raise
-
-                try:
-                    float(step)
-                except BaseException:
-                    continue
-                src_rouge_path = rouge_path.replace('.rouge', '.src_rouge')
-                if os.path.exists(src_rouge_path):
-                    try:
-                        r = read_rouge(src_rouge_path)
-                        src_rouge = " ; ".join([
-                            "%2.2f" % (100 * float(r["rouge-1"][k]))
-                            for k in ["r", "p", "f"]
-                        ])
-                    except BaseException:
-                        src_rouge = "err"
-                else:
-                    src_rouge = "none"
+                
                 r = {}
-                dec_suffix = rouge_path.split(str(step) + "k")[1]\
-                    .split(".txt")[0]\
-                    .replace('.', '')\
-                    .replace('true_test', '')
-                r['dec_suffix'] = clean_suffix(dec_suffix)
-                r['path'] = rouge_path
-                r['exp'] = exp_root
-                r['model'] = model
-                r['step'] = step
-                r['rouge_1'] = float(lines[3].split(
-                    'Average_F: ')[1].split()[0])
-                r['rouge_2'] = float(lines[7].split(
-                    'Average_F: ')[1].split()[0])
-                r['rouge_l'] = float(lines[11].split(
-                    'Average_F: ')[1].split()[0])
-                r['src_rouge'] = src_rouge
-                try:
-                    wc = int(wordcount(rouge_path.replace('.rouge', '')))
-                except Exception:
-                    wc = -1
-                    raise
-                r['wc'] = wc
+                for key, fct in fields.items():
+                    r[key] = fct(self, rouge_path, r)
 
-                for k, f in self.extra_fields.items():
-                    r[k] = f(rouge_path)
-                print(r)
                 results.append(r)
 
         if sort_field is None:
