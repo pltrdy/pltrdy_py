@@ -1,3 +1,4 @@
+SEP_LINE = "---------------------------------------------"
 
 
 def read_rouge(rouge_path):
@@ -10,46 +11,47 @@ def read_rouge(rouge_path):
             for $m in ['rouge-1', 'rouge-2', 'rouge-l']
             for $m in ['f', 'r', 'p']
     """
-    with open(rouge_path, 'r') as f:
-        rouge_lines = [_.strip() for _ in f]
+    with open(rouge_path) as f:
+        lines = [_.strip() for _ in f]
 
-    if not len(rouge_lines) == 13:
-        raise ValueError("Incorrect ROUGE file (%d != 13 lines) %s" %
-                         (len(rouge_lines), rouge_path))
+    rouge = {}
+    for i, line in enumerate(lines):
+        if line == SEP_LINE:
+            # print("Ignore SEP line")
+            continue
+        elif line.startswith("1 "):
+            line = line[2:]
+            
+            metric, stat_and_score = line.split("Average")
+            
+            assert metric.startswith("ROUGE-")
+            metric = metric.lower().strip()
 
-    rouge_format = {
-        "rouge-1": {
-            "r": 2,
-            "p": 3,
-            "f": 4
-        },
-        "rouge-2": {
-            "r": 6,
-            "p": 7,
-            "f": 8
-        },
-        "rouge-l": {
-            "r": 10,
-            "p": 11,
-            "f": 12
-        }
-    }
+            stat, score = stat_and_score.split(":")
+            assert stat.startswith("_")
+            stat = stat.replace("_", "").lower()
+            
+            score_value, confidence = score.split("(")
+            score_value = float(score_value)
+            
+            conf_prct, conf_int = confidence.split("-conf.int. ")
+            assert conf_prct.endswith("%")
+            conf_prct = float(conf_prct.replace("%", "")) / 100
+            
+            assert conf_int.endswith(")")
+            conf_lower, conf_upper = conf_int.replace(")", "").split(" - ")
 
-    def _rouge_value(m, s):
-        n = rouge_format[m][s]
-        line = rouge_lines[n - 1]
-        try:
-            end = line.split('Average_%s: ' % s.upper())[1]
-        except BaseException:
-            print(line, s, n, line.split('Average_%s: ' % s.upper()))
-            raise
-        score = end.split()[0]
-        return float(score)
+            if not metric in rouge.keys():
+                rouge[metric] = {}
+            if stat in rouge[metric].keys():
+                raise ValueError("Mutliple value for %s %s at line %d"
+                                 % (metric, stat, i))
+            rouge[metric][stat] = score_value
+            
+        elif len(line) == 0:
+            # print("Ignore empty line")
+            continue
+        else:
+            raise ValueError("Unkown line (%d): %s" % (i, line))
 
-    rouge_scores = {
-        m: {
-            s: _rouge_value(m, s)
-            for s in v.keys()
-        } for m, v in rouge_format.items()
-    }
-    return rouge_scores
+    return rouge 
