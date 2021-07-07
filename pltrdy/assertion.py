@@ -12,13 +12,17 @@ def aeq(*args, msg=None):
     )
 
 
-def aaeq(*args):
+def aaeq(*args, msg=None):
     assert len(args) > 1, "aaeq a single element is meaningless, use aeq"
+    if msg is not None:
+        msg = "[%s] " % msg
+    else:
+        msg = ""
 
     for i, args_i in enumerate(zip(*args)):
         assert all([_ == args_i[0] for _ in args_i[1:]]), (
-            "Arguments are not all equal for element %d, %s"
-            % (i, str(args_i))
+            "%sArguments are not all equal for element %d, %s."
+            % (msgi, str(args_i))
         )
 
 
