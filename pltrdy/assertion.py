@@ -1,18 +1,35 @@
 import numpy as np
 
+def equal(x, y, almost=False, epsilon=1e-7):
+    if not almost:
+        return x == y
+    else:
+        try:
+            return (y - epsilon) <= x <= (y + epsilon)
+        except TypeError:
+            raise ValueError(
+                "Invalid types (%s, %s) for almost comparison"
+                % (type(x), type(y)))
 
-def aeq(*args, msg=None):
+
+def aeq(*args, almost=False, epsilon=1e-7, msg=None):
     assert len(args) > 1, "aeq a single element is meaningless"
     if msg is not None:
         msg = "[%s] " % msg
     else:
         msg = ""
-    assert all([_ == args[0] for _ in args]), (
+    assert all([
+        equal(_,
+              args[0],
+              almost=almost,
+              epsilon=epsilon) 
+              for _ in args
+        ]), (
         "%sArguments are not all equal %s" % (msg, str(args))
     )
 
 
-def aaeq(*args, msg=None):
+def aaeq(*args, almost=False, epsilon=1e-7, msg=None):
     assert len(args) > 1, "aaeq a single element is meaningless, use aeq"
     if msg is not None:
         msg = "[%s] " % msg
@@ -20,11 +37,16 @@ def aaeq(*args, msg=None):
         msg = ""
 
     for i, args_i in enumerate(zip(*args)):
-        assert all([_ == args_i[0] for _ in args_i[1:]]), (
+        assert all([
+            equal(_,
+                 args_i[0],
+                 almost=almost,
+                 epsilon=epsilon)
+            for _ in args_i[1:]]
+        ), (
             "%sArguments are not all equal for element %d, %s."
             % (msgi, str(args_i))
         )
-
 
 def assert_shapes(*shapes):
     """shapes are iterable of same length
