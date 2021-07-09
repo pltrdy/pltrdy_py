@@ -31,7 +31,7 @@ def describe(o, max_elements=20, max_depth=100, depth=1):
         if n <= max_elements:
             keys = sorted(o.keys())
             for k in keys:
-                v = o [k]
+                v = o[k]
                 tab_print("%s:" % k, lvl=depth, end=" ")
                 describe(v, **next_kwargs)
     elif isinstance(o, list):

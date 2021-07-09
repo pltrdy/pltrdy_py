@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def equal(x, y, almost=False, epsilon=1e-7):
     if not almost:
         return x == y
@@ -22,9 +23,9 @@ def aeq(*args, almost=False, epsilon=1e-7, msg=None):
         equal(_,
               args[0],
               almost=almost,
-              epsilon=epsilon) 
-              for _ in args
-        ]), (
+              epsilon=epsilon)
+        for _ in args
+    ]), (
         "%sArguments are not all equal %s" % (msg, str(args))
     )
 
@@ -39,14 +40,15 @@ def aaeq(*args, almost=False, epsilon=1e-7, msg=None):
     for i, args_i in enumerate(zip(*args)):
         assert all([
             equal(_,
-                 args_i[0],
-                 almost=almost,
-                 epsilon=epsilon)
+                  args_i[0],
+                  almost=almost,
+                  epsilon=epsilon)
             for _ in args_i[1:]]
         ), (
             "%sArguments are not all equal for element %d, %s."
             % (msgi, str(args_i))
         )
+
 
 def assert_shapes(*shapes):
     """shapes are iterable of same length
