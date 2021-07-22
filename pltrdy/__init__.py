@@ -9,3 +9,5 @@ import pltrdy.time
 import pltrdy.wc  # noqa F401
 
 from pltrdy.describe import describe, tab_print
+
+__version__ = "0.1"
