@@ -10,4 +10,4 @@ import pltrdy.wc  # noqa F401
 
 from pltrdy.describe import describe_str, describe_lines, describe, tab_print
 
-__version__ = "0.1"
+__version__ = "0.2"
