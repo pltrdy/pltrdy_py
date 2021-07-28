@@ -13,38 +13,58 @@ def tab_print(*args, sep="        ", lvl=0, **kwargs):
     print(*args, **kwargs)
 
 
-def describe(o, max_elements=20, max_depth=100, depth=1):
+def describe(o, max_elements=20, max_depth=100, depth=1, file=sys.stdout):
+    def _print(*args, **kwargs):
+        print(*args, **kwargs, file=file)
+
     next_kwargs = {
         "max_elements": max_elements,
         "max_depth": (max_depth - 1),
         "depth": (depth + 1),
+        "file": file,
     }
 
+    lines = []
+
     if max_depth == 0:
-        print("(max depth reached)")
+        _print("(max depth reached)")
         return
 
     if isinstance(o, dict):
         keys = o.keys()
         n = len(o)
-        print("Dict (len: %d)" % n)
+        _print("Dict (len: %d)" % n)
         if n <= max_elements:
             keys = sorted(o.keys())
             for k in keys:
                 v = o[k]
-                tab_print("%s:" % k, lvl=depth, end=" ")
+                tab_print("%s:" % k, lvl=depth, end=" ", file=file)
                 describe(v, **next_kwargs)
     elif isinstance(o, list):
         n = len(o)
-        print("List (len: %d)" % n)
+        _print("List (len: %d)" % n)
         if n <= max_elements:
             for i, v in enumerate(o):
-                tab_print("#%d:" % i, lvl=depth, end=" ")
+                tab_print("#%d:" % i, lvl=depth, end=" ", file=file)
                 describe(v, **next_kwargs)
-    elif has_module("torch") and isinstance(o, torch.Tensor):
-        tensor_shape = str(list(o.size()))
-        tensor_type = str(o.type())
+    elif has_module("torch"):
+        import torch
+        if isinstance(o, torch.Tensor):
+            tensor_shape = str(list(o.size()))
+            tensor_type = str(o.type())
 
-        print("%s: %s" % (tensor_type, tensor_shape))
+            _print("%s: %s" % (tensor_type, tensor_shape))
     else:
-        print(repr(o))
+        _print(repr(o))
+
+
+def describe_str(*args, **kwargs):
+    from io import StringIO
+    s = StringIO()
+    describe(*args, file=s, **kwargs)
+
+    return s.getvalue()
+
+
+def describe_lines(*args, **kwargs):
+    return describe_str(*args, **kwargs).split("\n")

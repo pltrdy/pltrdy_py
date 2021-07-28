@@ -8,6 +8,6 @@ import pltrdy.stats
 import pltrdy.time
 import pltrdy.wc  # noqa F401
 
-from pltrdy.describe import describe, tab_print
+from pltrdy.describe import describe_str, describe_lines, describe, tab_print
 
 __version__ = "0.1"

@@ -20,7 +20,7 @@ def get_version():
 
 
 setup(
-    name='pltrdy_py',
+    name='pltrdy',
     description='',
     long_description=long_description,
     long_description_content_type='text/markdown',
