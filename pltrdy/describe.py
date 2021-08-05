@@ -5,6 +5,15 @@ def has_module(module_name):
     return module_name in sys.modules
 
 
+def is_torch_tensor(o):
+    if has_module("torch"):
+        import torch
+
+        if isinstance(o, torch.Tensor):
+            return True
+    return False
+
+
 def tab_print(*args, sep="        ", lvl=0, **kwargs):
     args = list(args)
     if lvl > 0:
@@ -47,13 +56,11 @@ def describe(o, max_elements=20, max_depth=100, depth=1, file=sys.stdout):
             for i, v in enumerate(o):
                 tab_print("#%d:" % i, lvl=depth, end=" ", file=file)
                 describe(v, **next_kwargs)
-    elif has_module("torch"):
-        import torch
-        if isinstance(o, torch.Tensor):
-            tensor_shape = str(list(o.size()))
-            tensor_type = str(o.type())
+    elif is_torch_tensor(o):
+        tensor_shape = str(list(o.size()))
+        tensor_type = str(o.type())
 
-            _print("%s: %s" % (tensor_type, tensor_shape))
+        _print("%s: %s" % (tensor_type, tensor_shape))
     else:
         _print(repr(o))
 
