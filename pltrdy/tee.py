@@ -25,17 +25,28 @@
 
 from __future__ import print_function
 import sys
-from error_exit import error_exit
 
 
 class Tee(object):
-    def __init__(self, tee_filename):
+    RAISE = "raise"
+    EXIT = "exit"
+
+    def __init__(self, tee_filename, behavior=RAISE):
+        self.behavior = behavior.lower()
+        assert self.behavior in [Tee.RAISE, Tee.EXIT, ]
+
         try:
             self.tee_fil = open(tee_filename, "w")
         except IOError as ioe:
-            error_exit("Caught IOError: {}".format(repr(ioe)))
+            if self.behavior == Tee.RAISE:
+                raise
+            else:
+                exit("Caught IOError: {}".format(repr(ioe)))
         except Exception as e:
-            error_exit("Caught Exception: {}".format(repr(e)))
+            if self.behavior == Tee.RAISE:
+                raise
+            else:
+                exit("Caught Exception: {}".format(repr(e)))
 
     def write(self, s):
         sys.stdout.write(s)
@@ -48,6 +59,18 @@ class Tee(object):
         try:
             self.tee_fil.close()
         except IOError as ioe:
-            error_exit("Caught IOError: {}".format(repr(ioe)))
+            if self.behavior == Tee.RAISE:
+                raise
+            else:
+                exit("Caught IOError: {}".format(repr(ioe)))
         except Exception as e:
-            error_exit("Caught Exception: {}".format(repr(e)))
+            if self.behavior == Tee.RAISE:
+                raise
+            else:
+                exit("Caught Exception: {}".format(repr(e)))
+
+    def __enter__(self):
+        return self.tee_fil
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
