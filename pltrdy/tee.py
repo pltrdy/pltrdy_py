@@ -1,21 +1,21 @@
 # tee.py
-# Purpose: A Python class with a write() method which, when 
-# used instead of print() or sys.stdout.write(), for writing 
-# output, will cause output to go to both sys.stdout and 
-# the filename passed to the class's constructor. The output 
+# Purpose: A Python class with a write() method which, when
+# used instead of print() or sys.stdout.write(), for writing
+# output, will cause output to go to both sys.stdout and
+# the filename passed to the class's constructor. The output
 # file is called the teefile in the below comments and code.
 
-# The idea is to do something roughly like the Unix tee command, 
+# The idea is to do something roughly like the Unix tee command,
 # but from within Python code, using this class in your program.
 
 # The teefile will be overwritten if it exists.
 
-# The class also has a writeln() method which is a convenience 
-# method that adds a newline at the end of each string it writes, 
+# The class also has a writeln() method which is a convenience
+# method that adds a newline at the end of each string it writes,
 # so that the user does not have to.
 
-# Python's string formatting language is supported (without any 
-# effort needed in this class), since Python's strings support it, 
+# Python's string formatting language is supported (without any
+# effort needed in this class), since Python's strings support it,
 # not the print method.
 
 # Author: Vasudev Ram

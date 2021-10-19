@@ -5,6 +5,7 @@ def binsize(o):
     import dill
     return len(dill.dumps(o))
 
+
 def has_module(module_name):
     return module_name in sys.modules
 
@@ -56,7 +57,11 @@ def describe(o, max_elements=20, max_depth=100, depth=1, file=sys.stdout,
         n = len(o)
         _print("Dict (len: %d%s)" % (n, size_str))
         if n <= max_elements:
-            keys = sorted(o.keys())
+            try:
+                keys = sorted(o.keys())
+            except TypeError:
+                keys = sorted(o.keys(), key=lambda e: str(e))
+
             for k in keys:
                 v = o[k]
                 tab_print("%s:" % k, lvl=depth, end=" ", file=file)
@@ -64,9 +69,10 @@ def describe(o, max_elements=20, max_depth=100, depth=1, file=sys.stdout,
         else:
             tab_print("(too many elements to show, %d > %d)"
                       % (n, max_elements), lvl=depth, file=file)
-    elif isinstance(o, list):
+    elif isinstance(o, list) or isinstance(o, tuple):
+
         n = len(o)
-        _print("List (len: %d%s)" % (n, size_str))
+        _print("%s (len: %d%s)" % (type(o), n, size_str))
         if n <= max_elements:
             for i, v in enumerate(o):
                 tab_print("#%d:" % i, lvl=depth, end=" ", file=file)
