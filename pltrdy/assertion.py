@@ -45,6 +45,7 @@ def aaeq(*args, almost=False, epsilon=1e-7, msg=None, ignore_single=False):
     else:
         msg = ""
 
+    aeq(*[len(_) for _ in args], msg="Size mismatch")
     for i, args_i in enumerate(zip(*args)):
         assert all([
             equal(_,
@@ -53,8 +54,8 @@ def aaeq(*args, almost=False, epsilon=1e-7, msg=None, ignore_single=False):
                   epsilon=epsilon)
             for _ in args_i[1:]]
         ), (
-            "%sArguments are not all equal for element %d, %s."
-            % (msgi, str(args_i))
+            "%sArguments are not all equal at position %d, %s."
+            % (msg, i, str(args_i))
         )
     return args[0]
 
