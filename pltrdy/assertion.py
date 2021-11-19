@@ -13,8 +13,13 @@ def equal(x, y, almost=False, epsilon=1e-7):
                 % (type(x), type(y)))
 
 
-def aeq(*args, almost=False, epsilon=1e-7, msg=None):
-    assert len(args) > 1, "aeq a single element is meaningless"
+def aeq(*args, almost=False, epsilon=1e-7, msg=None, ignore_single=False):
+    if ignore_single and len(args) == 1:
+        return args[0]
+
+    assert len(args) > 1, (
+        "aeq a single element is meaningless (ignore with `ignore_single`")
+
     if msg is not None:
         msg = "[%s] " % msg
     else:
@@ -30,7 +35,10 @@ def aeq(*args, almost=False, epsilon=1e-7, msg=None):
     )
     return args[0]
 
-def aaeq(*args, almost=False, epsilon=1e-7, msg=None):
+def aaeq(*args, almost=False, epsilon=1e-7, msg=None, ignore_single=False):
+    if ignore_single and len(args) == 1:
+        return args[0]
+
     assert len(args) > 1, "aaeq a single element is meaningless, use aeq"
     if msg is not None:
         msg = "[%s] " % msg
