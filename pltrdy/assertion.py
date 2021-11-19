@@ -28,7 +28,7 @@ def aeq(*args, almost=False, epsilon=1e-7, msg=None):
     ]), (
         "%sArguments are not all equal %s" % (msg, str(args))
     )
-
+    return args[0]
 
 def aaeq(*args, almost=False, epsilon=1e-7, msg=None):
     assert len(args) > 1, "aaeq a single element is meaningless, use aeq"
@@ -48,6 +48,7 @@ def aaeq(*args, almost=False, epsilon=1e-7, msg=None):
             "%sArguments are not all equal for element %d, %s."
             % (msgi, str(args_i))
         )
+    return args[0]
 
 
 def assert_shapes(*shapes):
