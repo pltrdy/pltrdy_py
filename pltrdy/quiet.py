@@ -20,7 +20,7 @@ class Quiet:
         self.stderr = sys.stderr
         sys.stderr = self.replace_err
     
-    def __exit__(self):
+    def __exit__(self, type, value, traceback):
         sys.stdout = self.stdout
         sys.stderr = self.stderr
 
