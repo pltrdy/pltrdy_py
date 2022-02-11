@@ -29,7 +29,7 @@ def aeq(*args, almost=False, epsilon=1e-7, msg=None, ignore_single=False):
               args[0],
               almost=almost,
               epsilon=epsilon)
-        for _ in args
+        for _ in args[1:]
     ]), (
         "%sArguments are not all equal %s" % (msg, str(args))
     )
