@@ -83,3 +83,11 @@ def assert_shapes(*shapes):
             ])
             raise AssertionError("Size mismatch on dimension %d: %s"
                                  % (i, shapes_str)) from e
+
+
+def assert_in(args, args_in):
+    for i, arg in enumerate(args):
+        for j, arg_in in enumerate(args_in):
+            assert arg in arg_in, \
+                f"Argument#{i}:{type(arg).__name__}={str(arg)} not in " \
+                f"arg_in#{j}:{type(arg_in).__name__}={str(arg_in)}"

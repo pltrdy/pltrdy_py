@@ -15,4 +15,4 @@ import pltrdy.types
 from pltrdy.describe import describe_str, describe_lines, describe, tab_print
 from pltrdy.reload import reload_class
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
