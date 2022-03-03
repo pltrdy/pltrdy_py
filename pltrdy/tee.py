@@ -74,3 +74,12 @@ class Tee(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+
+
+class TeeFiles:
+    def __init__(self, *files):
+        self.files = files
+
+    def write(self, *args, **kwargs):
+        for f in self.files:
+            f.write(*args, **kwargs)
