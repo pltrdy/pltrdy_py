@@ -11,8 +11,9 @@ import pltrdy.wc  # noqa F401
 import pltrdy.quiet
 import pltrdy.tmpdir
 import pltrdy.types
+import pltrdy.cmd
 
 from pltrdy.describe import describe_str, describe_lines, describe, tab_print
 from pltrdy.reload import reload_class
 
-__version__ = "0.3.7"
+__version__ = "0.3.8"
