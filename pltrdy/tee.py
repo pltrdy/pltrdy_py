@@ -33,7 +33,10 @@ class Tee(object):
 
     def __init__(self, tee_filename, behavior=RAISE):
         self.behavior = behavior.lower()
-        assert self.behavior in [Tee.RAISE, Tee.EXIT, ]
+        assert self.behavior in [
+            Tee.RAISE,
+            Tee.EXIT,
+        ]
 
         try:
             self.tee_fil = open(tee_filename, "w")
@@ -53,7 +56,7 @@ class Tee(object):
         self.tee_fil.write(s)
 
     def writeln(self, s):
-        self.write(s + '\n')
+        self.write(s + "\n")
 
     def close(self):
         try:

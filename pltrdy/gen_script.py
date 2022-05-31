@@ -41,9 +41,7 @@ def gen_script(data):
         tprint(1, '                    help="")')
         main_args.append("args.%s" % arg)
     for k, v in kwargs.items():
-        tprint(
-            1, 'parser.add_argument("-%s", "--%s", default="%s",' %
-            (k, k, v))
+        tprint(1, 'parser.add_argument("-%s", "--%s", default="%s",' % (k, k, v))
         tprint(1, '                    help="")')
         main_kwargs.append("%s=args.%s" % (k, k))
 

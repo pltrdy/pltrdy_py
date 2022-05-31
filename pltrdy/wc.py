@@ -14,5 +14,5 @@ def wordcount(path, args=["-w"]):
         args = args.split()
 
     o = subprocess.run(["wc"] + args + [path], stdout=subprocess.PIPE)
-    wc = int(o.stdout.decode('utf-8').split()[0])
+    wc = int(o.stdout.decode("utf-8").split()[0])
     return wc

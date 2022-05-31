@@ -7,8 +7,11 @@ def test():
 
     data = {
         "name": "the_test",
-        "args": ["param1", "p2", ],
-        "kwargs": {"opt_param1": "value1", "opt_param2": "value2"}
+        "args": [
+            "param1",
+            "p2",
+        ],
+        "kwargs": {"opt_param1": "value1", "opt_param2": "value2"},
     }
 
     data_json = json.dumps(data)

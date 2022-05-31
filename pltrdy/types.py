@@ -1,5 +1,3 @@
-
-
 def checktype(o, *types):
     for i, t in enumerate(types):
         if isinstance(t, type):
@@ -13,7 +11,7 @@ def checktype(o, *types):
         else:
             raise TypeError(
                 f"Invalid type of type {i} during check: {type(t)} instead of "
-                f"type, None")
+                f"type, None"
+            )
     else:
-        raise TypeError(
-            f"Invalid type {type(o)}, must be {', '.join(map(str, types))}")
+        raise TypeError(f"Invalid type {type(o)}, must be {', '.join(map(str, types))}")

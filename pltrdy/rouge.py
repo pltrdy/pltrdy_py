@@ -44,8 +44,9 @@ def read_rouge(rouge_path):
             if not metric in rouge.keys():
                 rouge[metric] = {}
             if stat in rouge[metric].keys():
-                raise ValueError("Mutliple value for %s %s at line %d"
-                                 % (metric, stat, i))
+                raise ValueError(
+                    "Mutliple value for %s %s at line %d" % (metric, stat, i)
+                )
             rouge[metric][stat] = score_value
 
         elif len(line) == 0:

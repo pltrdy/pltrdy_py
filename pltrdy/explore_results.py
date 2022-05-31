@@ -42,7 +42,7 @@ def dual_xent(rouge_path, agg=np.mean, n=None):
 
 
 def src_rouge(rouge_path):
-    src_rouge_path = rouge_path.replace('.rouge', '.src_rouge')
+    src_rouge_path = rouge_path.replace(".rouge", ".src_rouge")
     r = read_rouge(src_rouge_path)
     return r
 
@@ -68,26 +68,26 @@ def step_field_fct(self, rouge_path, memory):
 def dec_suffix_field_fct(self, rouge_path, memory):
     step = memory.get("step")
     if step is None:
-        raise ValueError(
-            "dec_suffix suppose 'step' field (absent from memory)")
-    dec_suffix = rouge_path.split(str(step) + "k")[1]\
-        .split(".txt")[0]\
-        .replace('.', '')\
-        .replace('true_test', '')
+        raise ValueError("dec_suffix suppose 'step' field (absent from memory)")
+    dec_suffix = (
+        rouge_path.split(str(step) + "k")[1]
+        .split(".txt")[0]
+        .replace(".", "")
+        .replace("true_test", "")
+    )
     return clean_suffix(dec_suffix)
 
 
 def wc_field_fct(self, rouge_path, memory):
-    wc = int(wordcount(rouge_path.replace('.rouge', '')))
+    wc = int(wordcount(rouge_path.replace(".rouge", "")))
     return wc
 
 
 def src_rouge_field_fct(self, rouge_path, memory):
     r = src_rouge(rouge_path)
-    return " ; ".join([
-        "%2.2f" % (100 * float(r["rouge-1"][k]))
-        for k in ["r", "p", "f"]
-    ])
+    return " ; ".join(
+        ["%2.2f" % (100 * float(r["rouge-1"][k])) for k in ["r", "p", "f"]]
+    )
 
 
 def model_name_by_pred(result_name):
@@ -102,55 +102,59 @@ def clean_suffix(suffix):
 
 
 class ResultsExplorer(object):
-    MODEL_NOTOK_REG = r'model_(.*)notok(.*)_pred(.*)'
+    MODEL_NOTOK_REG = r"model_(.*)notok(.*)_pred(.*)"
 
     # Fields function
     # i.e. calculate field value from self, rouge_path, memory
     DEFAULT_FIELDS = {
-        'exp': lambda s, p, m: os.path.dirname(p),
-        'model': lambda s, p, m: s.model_from_result_name(os.path.basename(p)),
-        'step': lambda s, p, m: step_field_fct(s, p, m),
-        'dec_suffix': lambda s, p, m: dec_suffix_field_fct(s, p, m),
-        'wc': lambda s, p, m: wc_field_fct(s, p, m),
-        'rouge_1': lambda s, p, m: read_rouge_memory(p, m)["rouge-1"]["f"],
-        'rouge_2': lambda s, p, m: read_rouge_memory(p, m)["rouge-2"]["f"],
-        'rouge_l': lambda s, p, m: read_rouge_memory(p, m)["rouge-l"]["f"],
-        'src_rouge': lambda s, p, m: src_rouge_field_fct(s, p, m)
+        "exp": lambda s, p, m: os.path.dirname(p),
+        "model": lambda s, p, m: s.model_from_result_name(os.path.basename(p)),
+        "step": lambda s, p, m: step_field_fct(s, p, m),
+        "dec_suffix": lambda s, p, m: dec_suffix_field_fct(s, p, m),
+        "wc": lambda s, p, m: wc_field_fct(s, p, m),
+        "rouge_1": lambda s, p, m: read_rouge_memory(p, m)["rouge-1"]["f"],
+        "rouge_2": lambda s, p, m: read_rouge_memory(p, m)["rouge-2"]["f"],
+        "rouge_l": lambda s, p, m: read_rouge_memory(p, m)["rouge-l"]["f"],
+        "src_rouge": lambda s, p, m: src_rouge_field_fct(s, p, m),
     }
 
     FILTERS = {
         "valid": lambda p: ".valid" in p,
-        "predtok": lambda p: ("predtok" in p or re.match(ResultsExplorer.MODEL_NOTOK_REG, p) is not None),
+        "predtok": lambda p: (
+            "predtok" in p or re.match(ResultsExplorer.MODEL_NOTOK_REG, p) is not None
+        ),
         "onlytoks": lambda p: "onlytoks" in p,
     }
 
-    SORT_FCT = {
-        "copy_desc": srcrougefct,
-        "ppl": lambda x: -x["ppl"]
-    }
+    SORT_FCT = {"copy_desc": srcrougefct, "ppl": lambda x: -x["ppl"]}
 
     DEFAULT_REGEX = r"model(.*)\.rouge"
 
-    def __init__(self, name, exps=[], default_regex=DEFAULT_REGEX, exps_with_regex={},
-                 custom_filters={}, extra_fields={},
-                 exclude_fields=[], fields=DEFAULT_FIELDS.keys(),
-                 model_name_fct=model_name_by_pred):
+    def __init__(
+        self,
+        name,
+        exps=[],
+        default_regex=DEFAULT_REGEX,
+        exps_with_regex={},
+        custom_filters={},
+        extra_fields={},
+        exclude_fields=[],
+        fields=DEFAULT_FIELDS.keys(),
+        model_name_fct=model_name_by_pred,
+    ):
         """
-            name:
-            exps: list of directories where *.rouge files are
-            exps_with_regex: dict of `directory: regex`
-            custom_filters: dict of filters `name: filter function`
-            extra_fields: dict of `name: field function` that take a .rouge
-                          path and should return the field value
+        name:
+        exps: list of directories where *.rouge files are
+        exps_with_regex: dict of `directory: regex`
+        custom_filters: dict of filters `name: filter function`
+        extra_fields: dict of `name: field function` that take a .rouge
+                      path and should return the field value
 
         """
         self.name = name
 
         self.exps_with_regex = exps_with_regex
-        self.exps_with_regex.update({
-            e: default_regex
-            for e in exps
-        })
+        self.exps_with_regex.update({e: default_regex for e in exps})
 
         self.fields = {}
         for k in fields:
@@ -159,8 +163,10 @@ class ResultsExplorer(object):
             if k in ResultsExplorer.DEFAULT_FIELDS.keys():
                 self.fields[k] = ResultsExplorer.DEFAULT_FIELDS[k]
             else:
-                raise ValueError("Unknow field %s, choices are: %s"
-                                 % (k, list(ResultsExplorer.DEFAULT_FIELDS[k])))
+                raise ValueError(
+                    "Unknow field %s, choices are: %s"
+                    % (k, list(ResultsExplorer.DEFAULT_FIELDS[k]))
+                )
         self.fields.update(extra_fields)
 
         self.filters = dict(ResultsExplorer.FILTERS)
@@ -178,10 +184,7 @@ class ResultsExplorer(object):
             if not v == _v:
                 return False
         return True
-        return all([
-            self.filters[k](path) == v
-            for k, v in filters_switch.items()
-        ])
+        return all([self.filters[k](path) == v for k, v in filters_switch.items()])
 
     def explore_results(self, sort_field=None, **filters):
         fields = self.fields
@@ -189,11 +192,13 @@ class ResultsExplorer(object):
 
         for exp_root, reg in self.exps_with_regex.items():
             print(exp_root)
-            exp_results = sorted([
-                _ for _ in os.listdir(exp_root)
-                if re.match(reg, _) is not None
-                and self.all_filters(_, filters)
-            ])
+            exp_results = sorted(
+                [
+                    _
+                    for _ in os.listdir(exp_root)
+                    if re.match(reg, _) is not None and self.all_filters(_, filters)
+                ]
+            )
             for result_name in exp_results:
                 rouge_path = os.path.join(exp_root, result_name)
 
@@ -204,42 +209,45 @@ class ResultsExplorer(object):
                 results.append(r)
 
         if sort_field is None:
-            results = sorted(results,
-                             key=lambda x: (
-                                 x['rouge_1'],
-                                 x['exp'],
-                                 x['model'],
-                                 x['step']
-                             ),
-                             reverse=True)
+            results = sorted(
+                results,
+                key=lambda x: (x["rouge_1"], x["exp"], x["model"], x["step"]),
+                reverse=True,
+            )
         else:
             if sort_field in ResultsExplorer.SORT_FCT:
                 sort_fct = ResultsExplorer.SORT_FCT[sort_field]
             else:
-                def sort_fct(x): return x[sort_field]
-            results = sorted(results,
-                             key=lambda x: (
-                                 sort_fct(x),
-                                 x['rouge_1'],
-                                 x['exp'],
-                                 x['model'],
-                                 int(x['step'].replace('k', ''))
-                             ),
-                             reverse=True)
+
+                def sort_fct(x):
+                    return x[sort_field]
+
+            results = sorted(
+                results,
+                key=lambda x: (
+                    sort_fct(x),
+                    x["rouge_1"],
+                    x["exp"],
+                    x["model"],
+                    int(x["step"].replace("k", "")),
+                ),
+                reverse=True,
+            )
 
         assert len(results) > 0
         m = ["| " + "|  ".join(fields) + " |"]
         m += ["|---" * len(fields) + " |"]
 
-        top = {k: max([r[k] for r in results])
-               for k in ['rouge_1', 'rouge_2', 'rouge_l', 'wc']}
+        top = {
+            k: max([r[k] for r in results])
+            for k in ["rouge_1", "rouge_2", "rouge_l", "wc"]
+        }
         for r in results:
-            for k in ['rouge_1', 'rouge_2', 'rouge_l', 'wc']:
+            for k in ["rouge_1", "rouge_2", "rouge_l", "wc"]:
                 if r[k] == top[k]:
                     r[k] = "**%f**" % r[k]
 
-            _r = "| " + "| ".join([str(r[k]).replace('_', '_')
-                                   for k in fields])
+            _r = "| " + "| ".join([str(r[k]).replace("_", "_") for k in fields])
             _r += " |"
             m += [_r]
 
@@ -249,9 +257,8 @@ class ResultsExplorer(object):
                 filters_suffix += ".%s" % k
 
         sort_suffix = "" if sort_field is None else ".%s" % sort_field
-        out_path = "results.%s%s%s.md" % (
-            self.name, filters_suffix, sort_suffix)
-        with open(out_path, 'w') as f:
+        out_path = "results.%s%s%s.md" % (self.name, filters_suffix, sort_suffix)
+        with open(out_path, "w") as f:
             print("Output in '%s'" % out_path)
             print("\n".join(m), file=f)
 
@@ -264,8 +271,5 @@ class ResultsExplorer(object):
             parser.add_argument("-%s" % f, action="store_true")
 
         args = parser.parse_args()
-        filters_args = {
-            f: getattr(args, f)
-            for f in filters
-        }
+        filters_args = {f: getattr(args, f) for f in filters}
         self.explore_results(sort_field=args.sort_field, **filters_args)

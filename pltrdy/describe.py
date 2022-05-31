@@ -3,6 +3,7 @@ import sys
 
 def binsize(o):
     import dill
+
     return len(dill.dumps(o))
 
 
@@ -27,8 +28,9 @@ def tab_print(*args, sep="        ", lvl=0, **kwargs):
     print(*args, **kwargs)
 
 
-def describe(o, max_elements=20, max_depth=100, depth=1, file=sys.stdout,
-             report_size=False):
+def describe(
+    o, max_elements=20, max_depth=100, depth=1, file=sys.stdout, report_size=False
+):
     def _print(*args, **kwargs):
         print(*args, **kwargs, file=file)
 
@@ -67,8 +69,11 @@ def describe(o, max_elements=20, max_depth=100, depth=1, file=sys.stdout,
                 tab_print("%s:" % k, lvl=depth, end=" ", file=file)
                 describe(v, **next_kwargs)
         else:
-            tab_print("(too many elements to show, %d > %d)"
-                      % (n, max_elements), lvl=depth, file=file)
+            tab_print(
+                "(too many elements to show, %d > %d)" % (n, max_elements),
+                lvl=depth,
+                file=file,
+            )
     elif isinstance(o, list) or isinstance(o, tuple):
 
         n = len(o)
@@ -78,8 +83,11 @@ def describe(o, max_elements=20, max_depth=100, depth=1, file=sys.stdout,
                 tab_print("#%d:" % i, lvl=depth, end=" ", file=file)
                 describe(v, **next_kwargs)
         else:
-            tab_print("(too many elements to show, %d > %d)"
-                      % (n, max_elements), lvl=depth, file=file)
+            tab_print(
+                "(too many elements to show, %d > %d)" % (n, max_elements),
+                lvl=depth,
+                file=file,
+            )
     elif is_torch_tensor(o):
         tensor_shape = str(list(o.size()))
         tensor_type = str(o.type())
@@ -91,6 +99,7 @@ def describe(o, max_elements=20, max_depth=100, depth=1, file=sys.stdout,
 
 def describe_str(*args, **kwargs):
     from io import StringIO
+
     s = StringIO()
     describe(*args, file=s, **kwargs)
 
