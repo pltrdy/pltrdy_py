@@ -12,6 +12,7 @@ import pltrdy.quiet
 import pltrdy.tmpdir
 import pltrdy.types
 import pltrdy.cmd
+import pltrdy.git
 
 from pltrdy.describe import describe_str, describe_lines, describe, tab_print
 from pltrdy.reload import reload_class
