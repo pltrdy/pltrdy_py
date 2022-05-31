@@ -17,4 +17,4 @@ import pltrdy.git
 from pltrdy.describe import describe_str, describe_lines, describe, tab_print
 from pltrdy.reload import reload_class
 
-__version__ = "0.3.8"
+__version__ = "0.3.9"
