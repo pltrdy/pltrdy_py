@@ -10,5 +10,5 @@ def run(args):
         args = args.split()
 
     o = subprocess.run(args, stdout=subprocess.PIPE)
-    output = o.stdout.decode('utf-8')
+    output = o.stdout.decode("utf-8")
     return output

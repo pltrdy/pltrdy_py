@@ -23,4 +23,7 @@ def get_git_revision_hash(root, short=False):
             f"Invalid root type ({type(root)}), should be either str, Path or module"
         )
 
+    if root.is_file():
+        root = root.parent
+
     return subprocess.check_output(args, cwd=root).decode("ascii").strip()
