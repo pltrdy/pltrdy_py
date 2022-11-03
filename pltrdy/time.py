@@ -5,6 +5,7 @@ EPOCH = "01/01/1970"
 TZ_PARIS = "Europe/Paris"
 DATE_FORMAT_DMY = "%d/%m/%Y"
 DATE_FORMAT_ISO = "%Y-%m-%d %H:%M:%S"
+DATE_FORMAT_ISO_TZ = f"{DATE_FORMAT_ISO} %Z"
 
 
 def now(timezone=TZ_PARIS):

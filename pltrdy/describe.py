@@ -29,7 +29,7 @@ def tab_print(*args, sep="        ", lvl=0, **kwargs):
 
 
 def describe(
-    o, max_elements=20, max_depth=100, depth=1, file=sys.stdout, report_size=False
+    o, max_elements=20, max_depth=100, depth=1, file=sys.stdout, report_size=False, max_str_len=50,
 ):
     def _print(*args, **kwargs):
         print(*args, **kwargs, file=file)
@@ -66,7 +66,7 @@ def describe(
 
             for k in keys:
                 v = o[k]
-                tab_print("%s:" % k, lvl=depth, end=" ", file=file)
+                tab_print(f"{k}:", lvl=depth, end=" ", file=file)
                 describe(v, **next_kwargs)
         else:
             tab_print(
@@ -92,9 +92,10 @@ def describe(
         tensor_shape = str(list(o.size()))
         tensor_type = str(o.type())
 
-        _print("%s: %s%s" % (tensor_type, tensor_shape, size_str))
+        _print(f"{tensor_type}: {tensor_shape}{size_str}")
     else:
-        _print("%s%s" % (repr(o), size_str))
+        o_str = repr(o)[:max_str_len]
+        _print(o_str + size_str)
 
 
 def describe_str(*args, **kwargs):
