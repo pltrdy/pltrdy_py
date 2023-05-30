@@ -22,7 +22,7 @@ def str_to_date(date_str, date_format=DATE_FORMAT_DMY, timezone=TZ_PARIS):
 
 
 def date_to_str(date, date_format=DATE_FORMAT_ISO):
-    s = datetime.datetime.strftime(date, DATE_FORMAT_ISO)
+    s = datetime.datetime.strftime(date, date_format)
     return s
 
 
