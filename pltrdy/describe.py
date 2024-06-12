@@ -29,7 +29,13 @@ def tab_print(*args, sep="        ", lvl=0, **kwargs):
 
 
 def describe(
-    o, max_elements=20, max_depth=100, depth=1, file=sys.stdout, report_size=False, max_str_len=50,
+    o,
+    max_elements=20,
+    max_depth=100,
+    depth=1,
+    file=sys.stdout,
+    report_size=False,
+    max_str_len=50,
 ):
     def _print(*args, **kwargs):
         print(*args, **kwargs, file=file)

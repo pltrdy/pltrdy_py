@@ -1,7 +1,6 @@
 import subprocess
-from types import ModuleType
-
 from pathlib import Path
+from types import ModuleType
 
 
 def get_git_revision_hash(root, short=False):
