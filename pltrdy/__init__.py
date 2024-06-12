@@ -16,4 +16,4 @@ import pltrdy.wc  # noqa F401
 from pltrdy.describe import describe, describe_lines, describe_str, tab_print
 from pltrdy.reload import reload_class
 
-__version__ = "0.3.10"
+__version__ = "0.3.11"
