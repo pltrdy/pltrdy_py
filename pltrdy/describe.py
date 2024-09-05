@@ -64,36 +64,40 @@ def describe(
         keys = o.keys()
         n = len(o)
         _print("Dict (len: %d%s)" % (n, size_str))
-        if n <= max_elements:
-            try:
-                keys = sorted(o.keys())
-            except TypeError:
-                keys = sorted(o.keys(), key=lambda e: str(e))
+        try:
+            keys = sorted(o.keys())
+        except TypeError:
+            keys = sorted(o.keys(), key=lambda e: str(e))
 
-            for k in keys:
-                v = o[k]
-                tab_print(f"{k}:", lvl=depth, end=" ", file=file)
-                describe(v, **next_kwargs)
-        else:
+        for k in keys[:max_elements]:
+            v = o[k]
+            tab_print(f"{k}:", lvl=depth, end=" ", file=file)
+            describe(v, **next_kwargs)
+
+        if n > max_elements:
             tab_print(
-                "(too many elements to show, %d > %d)" % (n, max_elements),
+                f"(skipping next elements to show, {n} < {max_elements})",
                 lvl=depth,
+                end=" ",
                 file=file,
             )
-    elif isinstance(o, list) or isinstance(o, tuple):
 
+    elif isinstance(o, list) or isinstance(o, tuple):
         n = len(o)
         _print("%s (len: %d%s)" % (type(o), n, size_str))
-        if n <= max_elements:
-            for i, v in enumerate(o):
-                tab_print("#%d:" % i, lvl=depth, end=" ", file=file)
-                describe(v, **next_kwargs)
-        else:
+
+        for i, v in enumerate(o[:max_elements]):
+            tab_print("#%d:" % i, lvl=depth, end=" ", file=file)
+            describe(v, **next_kwargs)
+
+        if n > max_elements:
             tab_print(
-                "(too many elements to show, %d > %d)" % (n, max_elements),
+                f"(skipping next elements to show, {n} < {max_elements})",
                 lvl=depth,
+                end=" ",
                 file=file,
             )
+
     elif is_torch_tensor(o):
         tensor_shape = str(list(o.size()))
         tensor_type = str(o.type())
